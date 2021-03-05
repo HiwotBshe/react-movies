@@ -1,7 +1,9 @@
 import React from 'react';
 import MovieCard from './MovieCard';
 import MovieDetails from './MovieDetails';
-import { getMoviesByName } from './utils';
+import ListView from './ListView';
+import Modal from './Modal';
+import { getMoviesByName, getMovieDetailsById } from './utils';
 
 class App extends React.Component {
 
@@ -12,8 +14,18 @@ class App extends React.Component {
       searchTerm: 'batman',
       isLoading: false, 
       movies: null,
-      error: null
+      error: null,
+      showModal: false,
+      currentMovie: null,
     }
+
+    this.setModalState = this.setModalState.bind(this);
+  }
+
+  setModalState(show=false) {
+    this.setState({
+      showModal: show
+    });
   }
 
   async componentDidMount() {
@@ -36,7 +48,7 @@ class App extends React.Component {
           error: error
         })
       }
-    }, 5000);
+    }, 1000);
     
   }
 
@@ -44,7 +56,17 @@ class App extends React.Component {
     console.log(this.state)
   }
 
+  async onMovieCardClicked(movieId) {
+    const movie = await getMovieDetailsById(movieId);
+    this.setState({
+      currentMovie: movie,
+      showModal: true
+    })
+  }
+
   render() {
+
+    const {currentMovie} = this.state;
 
     return (
       <>
@@ -52,20 +74,29 @@ class App extends React.Component {
           ? <h1>Loading data</h1>
           : (
             <>
-              {this.state.movies &&
-                this.state.movies.Search.map((movie, index) => (<MovieCard key={movie.imdbID} title={movie.Title} posterUrl={movie.Poster} type={movie.Type} />)) 
-              }
-        
-              <MovieDetails 
-                posterUrl="https://upload.wikimedia.org/wikipedia/en/8/83/Batman_returns_poster2.jpg"
-                title="Batman Returns"
-                rated="PG-13"
-                runtime={183}
-                // genre="Sci-fi"
-                rating={0}
-                plot="Batman beats up a bunch of bad guys."
-                actors={"Dani Devito, Henry Cavil"}
+              <ListView 
+                list={this.state.movies?.Search} 
+                render={(movie) => (
+                  <MovieCard 
+                    title={movie.Title} 
+                    posterUrl={movie.Poster} 
+                    type={movie.Type} 
+                    onClick={() => this.onMovieCardClicked(movie.imdbID)}
+                  />
+                )}
               />
+              <Modal show={this.state.showModal} onClose={() => this.setModalState(false)}>
+                <MovieDetails 
+                  posterUrl={currentMovie?.Poster}
+                  title={currentMovie?.Title}
+                  rated={currentMovie?.Rated}
+                  runtime={currentMovie?.Runtime}
+                  genre={currentMovie?.Genre}
+                  rating={currentMovie?.Ratings[0]?.Value}
+                  plot={currentMovie?.Plot}
+                  actors={currentMovie?.Actors}
+                />
+              </Modal>
             </>
           ) 
         }

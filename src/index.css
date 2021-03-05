@@ -76,3 +76,22 @@ code {
 .movie-details .info-section .title {
   font-weight: bold;
 }
+
+.modal {
+  z-index: 999;
+  display: flex;
+  justify-content: flex-end;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  scroll-behavior: none;
+}
+
+.modal-content {
+  padding: 20px;
+  background-color: white;
+  width: 75%;
+}
